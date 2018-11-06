@@ -1,0 +1,30 @@
+{
+    "update_id": 356024171,
+    "message": {
+        "message_id": 81,
+        "from": {
+            "id": 347710342,
+            "is_bot": false,
+            "first_name": "Alex",
+            "last_name": "Fishman",
+            "username": "Macedonn",
+            "language_code": "en-IL"
+        },
+        "chat": {
+            "id": 347710342,
+            "first_name": "Alex",
+            "last_name": "Fishman",
+            "username": "Macedonn",
+            "type": "private"
+        },
+        "date": 1539502441,
+        "text": "/start",
+        "entities": [
+            {
+                "offset": 0,
+                "length": 6,
+                "type": "bot_command"
+            }
+        ]
+    }
+}

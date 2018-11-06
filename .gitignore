@@ -1,0 +1,10 @@
+deploy.sh
+offline.sh
+logs.sh
+aws-keys
+package-lock.json
+node_modules
+.serverless
+./aws-keys
+.aws
+.tern-port

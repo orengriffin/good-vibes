@@ -1,0 +1,29 @@
+service: well-being-bot
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: dev
+  region: us-east-1
+  profile: oren
+  environment:
+    TELEGRAM_TOKEN: ${env:TELEGRAM_TOKEN}
+    PLOTLY_TOKEN: ${env:PLOTLY_TOKEN}
+    PLOTLY_USER: ${env:PLOTLY_USER}
+    MLAB_USER: ${env:MLAB_USER}
+    MLAB_PASS: ${env:MLAB_PASS}
+    MLAB_DB: ${env:MLAB_DB}
+
+functions:
+  app:
+    handler: index.handler
+    events:
+      - http:
+          path: 'get-message'
+          method: get
+      - http:
+          path: 'post-message'
+          method: post
+
+plugins:
+  - serverless-offline
