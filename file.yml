@@ -1,0 +1,1427 @@
+AfterPlugins: null
+Dependencies: null
+Plugin:
+  _type: container.BasicPlugin
+  AfterTasks: null
+  BeforeTasks: null
+  CommandLineArguments: null
+  Entrypoint: null
+  EnvironmentVariables:
+    RABBITMQ_DEFAULT_PASS:
+      _type: capabilities.ConstantValueGetter
+      Text: guest
+    RABBITMQ_DEFAULT_USER:
+      _type: capabilities.ConstantValueGetter
+      Text: guest
+  Exposures:
+    main-uri:
+      URI:
+        ExternalPort: 5672
+        InternalPort: 5672
+        InternalScheme: amqp
+        IsPasswordSet: false
+        Password: ""
+        Path: ""
+        Protocol: TCP
+        Username: ""
+  Image:
+    AlwaysPull: false
+    Image: rabbitmq
+    Tag: 3.8-management-alpine
+  LivenessProbe: null
+  Name: ""
+  Persistencies: null
+  PodSecurityContext: null
+  ReadinessProbe: null
+  ResourceLimits: null
+  ResourceRequests:
+    CPU: 100m
+    Memory: 128Mi
+  SecurityContext: null
+  Sidecars: null
+  SingleInstance: false
+  Volumes: null
+ServiceDefinitionID: 223
+ServiceDefinitionName: rabbitmq
+
+---
+AfterPlugins: null
+Dependencies: null
+Plugin:
+  _type: s3.Plugin
+  PutBucketCorsInput: null
+ServiceDefinitionID: 227
+ServiceDefinitionName: s3-playback-recording
+
+---
+AfterPlugins: null
+Dependencies: null
+Plugin:
+  _type: redis.Plugin
+  Database: 0
+  Image: null
+  StorageRequest: null
+  UsePassword: false
+ServiceDefinitionID: 224
+ServiceDefinitionName: redis
+
+---
+AfterPlugins:
+  - _type: seeding.SnapshotPlugin
+    Seedings:
+      - Database: optibus
+        Snapshots:
+          - 20210913-snapshot.gz
+Dependencies: null
+Plugin:
+  _type: mongodb.Plugin
+  Image:
+    AlwaysPull: false
+    Image: bitnami/mongodb
+    Tag: 4.4.10
+  RestrictedUser:
+    Database: optibus
+    Password: oppass
+    Username: opuser
+  StorageRequest: 10Gi
+ServiceDefinitionID: 225
+ServiceDefinitionName: mongodb
+
+---
+AfterPlugins: null
+Dependencies: null
+Plugin:
+  _type: s3.Plugin
+  PutBucketCorsInput: null
+ServiceDefinitionID: 226
+ServiceDefinitionName: s3-customer-data
+
+---
+AfterPlugins: null
+Dependencies: null
+Plugin:
+  _type: container.BasicPlugin
+  AfterTasks: null
+  BeforeTasks: null
+  CommandLineArguments: null
+  Entrypoint: null
+  EnvironmentVariables:
+    THEMIS_ROOT:
+      _type: capabilities.ConstantValueGetter
+      Text: /themis
+  Exposures:
+    main-uri:
+      URI:
+        ExternalPort: 8000
+        InternalPort: 8000
+        InternalScheme: http
+        IsPasswordSet: false
+        Password: ""
+        Path: ""
+        Protocol: TCP
+        Username: ""
+  Image:
+    AlwaysPull: true
+    Image: 008770191051.dkr.ecr.us-east-2.amazonaws.com/themis-prod
+    Tag: master-latest
+  LivenessProbe: null
+  Name: themis
+  Persistencies: null
+  PodSecurityContext: null
+  ReadinessProbe:
+    Exec: null
+    FailureThreshold: 2
+    HTTPGet:
+      Headers: null
+      Path: /ready
+      Port: "8000"
+    InitialDelaySeconds: 0
+    IntervalSeconds: 5
+    SuccessThreshold: 1
+    TimeoutSeconds: 5
+  ResourceLimits: null
+  ResourceRequests:
+    CPU: 100m
+    Memory: 128Mi
+  SecurityContext: null
+  Sidecars: null
+  SingleInstance: true
+  Volumes: null
+ServiceDefinitionID: 431
+ServiceDefinitionName: themis
+
+---
+AfterPlugins: null
+Dependencies: null
+Plugin:
+  _type: s3.Plugin
+  PutBucketCorsInput:
+    Bucket: null
+    CORSConfiguration:
+      CORSRules:
+        - AllowedHeaders:
+            - '*'
+          AllowedMethods:
+            - GET
+            - POST
+            - PUT
+            - HEAD
+            - DELETE
+          AllowedOrigins:
+            - https://*.opvelo.com
+            - http://local.optibus.co:4200
+          ExposeHeaders: null
+          ID: null
+          MaxAgeSeconds: null
+    ExpectedBucketOwner: null
+ServiceDefinitionID: 432
+ServiceDefinitionName: s3-client-playback-recording
+
+---
+AfterPlugins: null
+Dependencies:
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        RABBITMQ_HOST:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        RABBITMQ_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 223
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        EUCLID:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_IMPORT_DS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_MNE:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_RECOMMENDATIONS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_ROSTER_VALIDATION:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+    Plugins: null
+    ServiceDefinitionID: 414
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        REDIS_ENDPOINTS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        REDIS_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 224
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        mongo__mongoUrl:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalURI
+        mongo__password:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Password
+        mongo__username:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Username
+    Plugins: null
+    ServiceDefinitionID: 225
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        CUSTOMER_DATA_BUCKET_NAME:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 226
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        CLIENT_PLAYBACK_BUCKET:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 432
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        HERMES_HOSTNAME:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        HERMES_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 431
+    UseSamePort: true
+Plugin:
+  _type: container.BasicPlugin
+  AfterTasks: null
+  BeforeTasks: null
+  CommandLineArguments:
+    - _type: capabilities.ConstantValueGetter
+      Text: -c
+    - _type: capabilities.ConstantValueGetter
+      Text: node --max-old-space-size=3072 js-rabbit-worker.js
+  Entrypoint:
+    - _type: capabilities.ConstantValueGetter
+      Text: /bin/sh
+  EnvironmentVariables:
+    AUTH_TOKEN:
+      _type: capabilities.ConstantValueGetter
+      Text: testtoken
+    AWS_REGION:
+      _type: capabilities.ConstantValueGetter
+      Text: us-east-2
+    ENV:
+      _type: capabilities.ConstantValueGetter
+      Text: velocity2
+    GOOGLE_MAPS_FRONTEND_API_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: google_maps_api_key
+      SecretName: optibus-secrets
+    GOOGLE_RECAPTCH_SECRET_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: recaptcha_secret_key
+      SecretName: optibus-secrets
+    GOOGLE_RECAPTCH_SITE_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: recaptcha_site_key
+      SecretName: optibus-secrets
+    JS_WORKER_QUEUE:
+      _type: capabilities.ConstantValueGetter
+      Text: js_worker_big
+    MIXPANEL_TOKEN:
+      _type: capabilities.SecretValueGetter
+      Key: mixpanel_token
+      SecretName: optibus-secrets
+    NODE_CELERY_DEBUG:
+      _type: capabilities.ConstantValueGetter
+      Text: "1"
+    NODE_ENV:
+      _type: capabilities.ConstantValueGetter
+      Text: development
+    PUSHER_APP_ID:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_app_id
+      SecretName: optibus-secrets
+    PUSHER_CLUSTER:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_cluster
+      SecretName: optibus-secrets
+    PUSHER_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_key
+      SecretName: optibus-secrets
+    PUSHER_SECRET:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_secret
+      SecretName: optibus-secrets
+    SERVICE_NAME:
+      _type: capabilities.ConstantValueGetter
+      Text: mithra-js-worker-big
+    TAG:
+      _type: capabilities.ConstantValueGetter
+      Text: develop-latest
+  Exposures: null
+  Image:
+    AlwaysPull: true
+    Image: 008770191051.dkr.ecr.us-east-2.amazonaws.com/mithra-prod
+    Tag: develop-latest
+  LivenessProbe: null
+  Name: ""
+  Persistencies: null
+  PodSecurityContext: null
+  ReadinessProbe: null
+  ResourceLimits:
+    CPU: 500m
+    Memory: 512Mi
+  ResourceRequests:
+    CPU: 100m
+    Memory: 128Mi
+  SecurityContext: null
+  Sidecars: null
+  SingleInstance: false
+  Volumes: null
+ServiceDefinitionID: 221
+ServiceDefinitionName: mithra-js-worker-big
+
+---
+AfterPlugins: null
+Dependencies:
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        RABBITMQ_HOST:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+    Plugins: null
+    ServiceDefinitionID: 223
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        REDIS_ENDPOINTS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+    Plugins: null
+    ServiceDefinitionID: 224
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        MONGO_PASS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Password
+        MONGO_PRIV_IP:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalURI
+        MONGO_USER:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Username
+    Plugins: null
+    ServiceDefinitionID: 225
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        PLAYBACK_RECORDING_BUCKET:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 227
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        MITHRA_DATA_DNS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalAddress
+        MITHRA_PRIME_DNS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalAddress
+    Plugins: null
+    ServiceDefinitionID: 219
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        CUSTOMER_DATA_BUCKET_NAME:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 226
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        HERMES_HOSTNAME:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        HERMES_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 431
+    UseSamePort: true
+Plugin:
+  _type: container.BasicPlugin
+  AfterTasks: null
+  BeforeTasks: null
+  CommandLineArguments:
+    - _type: capabilities.ConstantValueGetter
+      Text: -c
+    - _type: capabilities.ConstantValueGetter
+      Text: PRODUCTION="True" /envp/bin/celery worker -Ofair --queues=validations --app=euclid.tasks_validations --loglevel=info --concurrency=1 --logfile=/var/log/celery/workers-na.log --maxtasksperchild=1
+  Entrypoint:
+    - _type: capabilities.ConstantValueGetter
+      Text: /bin/sh
+  EnvironmentVariables:
+    AWS_REGION:
+      _type: capabilities.ConstantValueGetter
+      Text: us-east-2
+    C_FORCE_ROOT:
+      _type: capabilities.ConstantValueGetter
+      Text: "true"
+    CELERY_QUEUE:
+      _type: capabilities.ConstantValueGetter
+      Text: validations
+    DEFAULT_PARALLELISM:
+      _type: capabilities.ConstantValueGetter
+      Text: "8"
+    DUMP_REPRODUCTIONS:
+      _type: capabilities.ConstantValueGetter
+      Text: "True"
+    ENV:
+      _type: capabilities.ConstantValueGetter
+      Text: velocity2
+    MITHRA_AUTH_TOKEN:
+      _type: capabilities.ConstantValueGetter
+      Text: testtoken
+    MIXPANEL_TOKEN:
+      _type: capabilities.SecretValueGetter
+      Key: mixpanel_token
+      SecretName: optibus-secrets
+    PRODUCTION:
+      _type: capabilities.ConstantValueGetter
+      Text: "False"
+    PYPY_GC_MAX:
+      _type: capabilities.ConstantValueGetter
+      Text: 2GB
+    PYTHONOPTIMIZE:
+      _type: capabilities.ConstantValueGetter
+      Text: "1"
+    SERVICE_NAME:
+      _type: capabilities.ConstantValueGetter
+      Text: euclid-validations
+    SHARED_FILESYSTEM:
+      _type: capabilities.ConstantValueGetter
+      Text: /shared_data
+    TAG:
+      _type: capabilities.ConstantValueGetter
+      Text: develop-latest
+  Exposures: null
+  Image:
+    AlwaysPull: true
+    Image: 008770191051.dkr.ecr.us-east-2.amazonaws.com/euclid-prod
+    Tag: develop-latest
+  LivenessProbe: null
+  Name: ""
+  Persistencies: null
+  PodSecurityContext: null
+  ReadinessProbe:
+    Exec:
+      Command:
+        - /bin/bash
+        - -c
+        - celery inspect -b amqp://$RABBITMQ_HOST ping -d celery@$(hostname)
+    FailureThreshold: 5
+    HTTPGet: null
+    InitialDelaySeconds: 0
+    IntervalSeconds: 5
+    SuccessThreshold: 1
+    TimeoutSeconds: 5
+  ResourceLimits:
+    CPU: 500m
+    Memory: 1Gi
+  ResourceRequests:
+    CPU: 100m
+    Memory: 128Mi
+  SecurityContext: null
+  Sidecars: null
+  SingleInstance: false
+  Volumes:
+    - MountPath: /logs
+      Name: logs
+      ReadOnly: false
+      Source: 3
+    - MountPath: /shared_data
+      Name: fake-fs
+      ReadOnly: false
+      Source: 3
+ServiceDefinitionID: 222
+ServiceDefinitionName: euclid-validations
+
+---
+AfterPlugins: null
+Dependencies:
+  - Inputs: null
+    Plugins: null
+    ServiceDefinitionID: 220
+    UseSamePort: false
+  - Inputs: null
+    Plugins: null
+    ServiceDefinitionID: 221
+    UseSamePort: false
+  - Inputs: null
+    Plugins: null
+    ServiceDefinitionID: 222
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        RABBITMQ_HOST:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        RABBITMQ_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 223
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        EUCLID:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_IMPORT_DS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_MNE:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_RECOMMENDATIONS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_ROSTER_VALIDATION:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+    Plugins: null
+    ServiceDefinitionID: 414
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        REDIS_ENDPOINTS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        REDIS_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 224
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        mongo__mongoUrl:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalURI
+        mongo__password:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Password
+        mongo__username:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Username
+    Plugins: null
+    ServiceDefinitionID: 225
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        CUSTOMER_DATA_BUCKET_NAME:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 226
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        CLIENT_PLAYBACK_BUCKET:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 432
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        HERMES_HOSTNAME:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        HERMES_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 431
+    UseSamePort: true
+Plugin:
+  _type: container.BasicPlugin
+  AfterTasks: null
+  BeforeTasks: null
+  CommandLineArguments:
+    - _type: capabilities.ConstantValueGetter
+      Text: -c
+    - _type: capabilities.ConstantValueGetter
+      Text: server__port=4200 TESTIMIO=1 node --max-old-space-size=3072 server_runner.js
+  Entrypoint:
+    - _type: capabilities.ConstantValueGetter
+      Text: /bin/sh
+  EnvironmentVariables:
+    AUTH_TOKEN:
+      _type: capabilities.ConstantValueGetter
+      Text: testtoken
+    AWS_REGION:
+      _type: capabilities.ConstantValueGetter
+      Text: us-east-2
+    ENV:
+      _type: capabilities.ConstantValueGetter
+      Text: velocity2
+    GOOGLE_MAPS_FRONTEND_API_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: google_maps_api_key
+      SecretName: optibus-secrets
+    GOOGLE_RECAPTCH_SECRET_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: recaptcha_secret_key
+      SecretName: optibus-secrets
+    GOOGLE_RECAPTCH_SITE_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: recaptcha_site_key
+      SecretName: optibus-secrets
+    MIXPANEL_TOKEN:
+      _type: capabilities.SecretValueGetter
+      Key: mixpanel_token
+      SecretName: optibus-secrets
+    NODE_CELERY_DEBUG:
+      _type: capabilities.ConstantValueGetter
+      Text: "1"
+    NODE_ENV:
+      _type: capabilities.ConstantValueGetter
+      Text: development
+    PUSHER_APP_ID:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_app_id
+      SecretName: optibus-secrets
+    PUSHER_CLUSTER:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_cluster
+      SecretName: optibus-secrets
+    PUSHER_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_key
+      SecretName: optibus-secrets
+    PUSHER_SECRET:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_secret
+      SecretName: optibus-secrets
+    SERVICE_NAME:
+      _type: capabilities.ConstantValueGetter
+      Text: mithra
+    TAG:
+      _type: capabilities.ConstantValueGetter
+      Text: latest
+    USE_LAMBDA_MOCK:
+      _type: capabilities.ConstantValueGetter
+      Text: "true"
+    server__hostname:
+      _type: capabilities.ConstantValueGetter
+      Text: 0.0.0.0
+    server__port:
+      _type: capabilities.ConstantValueGetter
+      Text: "3000"
+  Exposures:
+    main-uri:
+      URI:
+        ExternalPort: 4200
+        InternalPort: 4200
+        InternalScheme: http
+        IsPasswordSet: false
+        Password: ""
+        Path: ""
+        Protocol: TCP
+        Username: ""
+  Image:
+    AlwaysPull: true
+    Image: 008770191051.dkr.ecr.us-east-2.amazonaws.com/mithra-prod
+    Tag: develop-latest
+  LivenessProbe:
+    Exec: null
+    FailureThreshold: 5
+    HTTPGet:
+      Headers: null
+      Path: /public_api/v1/live
+      Port: "4200"
+    InitialDelaySeconds: 10
+    IntervalSeconds: 10
+    SuccessThreshold: 1
+    TimeoutSeconds: 15
+  Name: mithra
+  Persistencies: null
+  PodSecurityContext: null
+  ReadinessProbe:
+    Exec: null
+    FailureThreshold: 2
+    HTTPGet:
+      Headers: null
+      Path: /public_api/v1/ready
+      Port: "4200"
+    InitialDelaySeconds: 10
+    IntervalSeconds: 5
+    SuccessThreshold: 1
+    TimeoutSeconds: 5
+  ResourceLimits: null
+  ResourceRequests:
+    CPU: 100m
+    Memory: 128Mi
+  SecurityContext: null
+  Sidecars: null
+  SingleInstance: true
+  Volumes: null
+ServiceDefinitionID: 219
+ServiceDefinitionName: mithra
+
+---
+AfterPlugins: null
+Dependencies:
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        MITHRA_API_ENDPOINT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalAddress
+        MITHRA_PRIME_DNS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalAddress
+    Plugins: null
+    ServiceDefinitionID: 219
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        PLAYBACK_RECORDING_BUCKET:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 227
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        REDIS_ENDPOINTS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+    Plugins: null
+    ServiceDefinitionID: 224
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        MONGO_PASS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Password
+        MONGO_PRIV_IP:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalURI
+        MONGO_USER:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Username
+    Plugins: null
+    ServiceDefinitionID: 225
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        CUSTOMER_DATA_BUCKET_NAME:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 226
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        HERMES_HOSTNAME:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        HERMES_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 431
+    UseSamePort: true
+Plugin:
+  _type: container.BasicPlugin
+  AfterTasks: null
+  BeforeTasks: null
+  CommandLineArguments:
+    - _type: capabilities.ConstantValueGetter
+      Text: -c
+    - _type: capabilities.ConstantValueGetter
+      Text: |-
+        cp /euclid/nginx.kubernetes.conf /opt/shared/nginx.conf
+        PRODUCTION="True" /envp/bin/gunicorn --config=/euclid/euclid/http/gunicorn/gunicorn_config.py \
+          euclid.http.main:app.app \
+          --chdir=/euclid \
+          --workers=2 \
+          --timeout=900 \
+          --graceful-timeout=300 \
+          --max-requests-jitter=10000 \
+          --bind=unix:/opt/shared/gunicorn_general_flask.sock \
+          --limit-request-line=0
+  Entrypoint:
+    - _type: capabilities.ConstantValueGetter
+      Text: /bin/sh
+  EnvironmentVariables:
+    AWS_REGION:
+      _type: capabilities.ConstantValueGetter
+      Text: us-east-2
+    DEFAULT_PARALLELISM:
+      _type: capabilities.ConstantValueGetter
+      Text: "8"
+    DUMP_REPRODUCTIONS:
+      _type: capabilities.ConstantValueGetter
+      Text: "True"
+    ENABLE_DATA_SET_CACHE:
+      _type: capabilities.ConstantValueGetter
+      Text: "True"
+    ENV:
+      _type: capabilities.ConstantValueGetter
+      Text: velocity2
+    MITHRA_AUTH_TOKEN:
+      _type: capabilities.ConstantValueGetter
+      Text: testtoken
+    PRODUCTION:
+      _type: capabilities.ConstantValueGetter
+      Text: "False"
+    PYPY_GC_MAX:
+      _type: capabilities.ConstantValueGetter
+      Text: 2GB
+    SERVICE_NAME:
+      _type: capabilities.ConstantValueGetter
+      Text: euclid-http
+    SHARED_FILESYSTEM:
+      _type: capabilities.ConstantValueGetter
+      Text: /shared_data
+    TAG:
+      _type: capabilities.ConstantValueGetter
+      Text: latest
+  Exposures:
+    main-uri:
+      URI:
+        ExternalPort: 5000
+        InternalPort: 5000
+        InternalScheme: http
+        IsPasswordSet: false
+        Password: ""
+        Path: ""
+        Protocol: TCP
+        Username: ""
+  Image:
+    AlwaysPull: true
+    Image: 008770191051.dkr.ecr.us-east-2.amazonaws.com/euclid-prod
+    Tag: develop-latest
+  LivenessProbe: null
+  Name: euclid-http
+  Persistencies: null
+  PodSecurityContext: null
+  ReadinessProbe:
+    Exec: null
+    FailureThreshold: 2
+    HTTPGet:
+      Headers: null
+      Path: /health_check
+      Port: "5000"
+    InitialDelaySeconds: 0
+    IntervalSeconds: 5
+    SuccessThreshold: 1
+    TimeoutSeconds: 5
+  ResourceLimits: null
+  ResourceRequests:
+    CPU: 100m
+    Memory: 128Mi
+  SecurityContext: null
+  Sidecars:
+    - CommandLineArguments:
+        - _type: capabilities.ConstantValueGetter
+          Text: /bin/sh
+        - _type: capabilities.ConstantValueGetter
+          Text: -c
+        - _type: capabilities.ConstantValueGetter
+          Text: while [ ! -f "$NGINX_CONF" ]; do sleep 1; done; nginx -c $NGINX_CONF;
+      Entrypoint: null
+      EnvironmentVariables:
+        NGINX_CONF:
+          _type: capabilities.ConstantValueGetter
+          Text: /opt/shared/nginx.conf
+      Image:
+        AlwaysPull: false
+        Image: nginx
+        Tag: 1.13.8-alpine
+      LivenessProbe: null
+      Name: nginx
+      ReadinessProbe: null
+      ResourceLimits: null
+      ResourceRequests:
+        CPU: 50m
+        Memory: 0.1Gi
+      SecurityContext: null
+      SingleInstance: false
+      Volumes:
+        - MountPath: /opt/shared
+          Name: nginx-conf
+          ReadOnly: false
+          Source: 3
+  SingleInstance: true
+  Volumes:
+    - MountPath: /opt/shared
+      Name: nginx-conf
+      ReadOnly: false
+      Source: 3
+    - MountPath: /shared_data
+      Name: fake-fs
+      ReadOnly: false
+      Source: 3
+ServiceDefinitionID: 414
+ServiceDefinitionName: euclid-http
+
+---
+AfterPlugins: null
+Dependencies:
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        RABBITMQ_HOST:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        RABBITMQ_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 223
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        EUCLID:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_IMPORT_DS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_MNE:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_RECOMMENDATIONS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        EUCLID_ROSTER_VALIDATION:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+    Plugins: null
+    ServiceDefinitionID: 414
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        REDIS_ENDPOINTS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        REDIS_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 224
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        mongo__mongoUrl:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalURI
+        mongo__password:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Password
+        mongo__username:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: Username
+    Plugins: null
+    ServiceDefinitionID: 225
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        CUSTOMER_DATA_BUCKET_NAME:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 226
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        CLIENT_PLAYBACK_BUCKET:
+          _type: capabilities.CloudResourcePropertyGetter
+          Property: cloud-resource-name
+    Plugins: null
+    ServiceDefinitionID: 432
+    UseSamePort: false
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        HERMES_HOSTNAME:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        HERMES_PORT:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalPort
+    Plugins: null
+    ServiceDefinitionID: 431
+    UseSamePort: true
+Plugin:
+  _type: container.BasicPlugin
+  AfterTasks: null
+  BeforeTasks: null
+  CommandLineArguments:
+    - _type: capabilities.ConstantValueGetter
+      Text: -c
+    - _type: capabilities.ConstantValueGetter
+      Text: node --max-old-space-size=3072 js-rabbit-worker.js
+  Entrypoint:
+    - _type: capabilities.ConstantValueGetter
+      Text: /bin/sh
+  EnvironmentVariables:
+    AUTH_TOKEN:
+      _type: capabilities.ConstantValueGetter
+      Text: testtoken
+    AWS_REGION:
+      _type: capabilities.ConstantValueGetter
+      Text: us-east-2
+    ENV:
+      _type: capabilities.ConstantValueGetter
+      Text: velocity2
+    GOOGLE_MAPS_FRONTEND_API_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: google_maps_api_key
+      SecretName: optibus-secrets
+    GOOGLE_RECAPTCH_SECRET_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: recaptcha_secret_key
+      SecretName: optibus-secrets
+    GOOGLE_RECAPTCH_SITE_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: recaptcha_site_key
+      SecretName: optibus-secrets
+    JS_WORKER_QUEUE:
+      _type: capabilities.ConstantValueGetter
+      Text: js_worker
+    MITHRA_TYPE:
+      _type: capabilities.ConstantValueGetter
+      Text: js_worker
+    MIXPANEL_TOKEN:
+      _type: capabilities.SecretValueGetter
+      Key: mixpanel_token
+      SecretName: optibus-secrets
+    NODE_CELERY_DEBUG:
+      _type: capabilities.ConstantValueGetter
+      Text: "1"
+    NODE_ENV:
+      _type: capabilities.ConstantValueGetter
+      Text: development
+    PUSHER_APP_ID:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_app_id
+      SecretName: optibus-secrets
+    PUSHER_CLUSTER:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_cluster
+      SecretName: optibus-secrets
+    PUSHER_KEY:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_key
+      SecretName: optibus-secrets
+    PUSHER_SECRET:
+      _type: capabilities.SecretValueGetter
+      Key: pusher_secret
+      SecretName: optibus-secrets
+    SERVICE_NAME:
+      _type: capabilities.ConstantValueGetter
+      Text: mithra-js-worker
+    TAG:
+      _type: capabilities.ConstantValueGetter
+      Text: develop-latest
+  Exposures: null
+  Image:
+    AlwaysPull: true
+    Image: 008770191051.dkr.ecr.us-east-2.amazonaws.com/mithra-prod
+    Tag: develop-latest
+  LivenessProbe: null
+  Name: ""
+  Persistencies: null
+  PodSecurityContext: null
+  ReadinessProbe: null
+  ResourceLimits:
+    CPU: 500m
+    Memory: 512Mi
+  ResourceRequests:
+    CPU: 100m
+    Memory: 128Mi
+  SecurityContext: null
+  Sidecars: null
+  SingleInstance: false
+  Volumes: null
+ServiceDefinitionID: 220
+ServiceDefinitionName: mithra-js-worker
+
+---
+AfterPlugins: null
+Dependencies:
+  - Inputs: null
+    Plugins: null
+    ServiceDefinitionID: 219
+    UseSamePort: false
+Plugin:
+  _type: container.BasicPlugin
+  AfterTasks: null
+  BeforeTasks: null
+  CommandLineArguments: null
+  Entrypoint: null
+  EnvironmentVariables: null
+  Exposures:
+    main-uri:
+      URI:
+        ExternalPort: 80
+        InternalPort: 80
+        InternalScheme: http
+        IsPasswordSet: false
+        Password: ""
+        Path: ""
+        Protocol: TCP
+        Username: ""
+  Image:
+    AlwaysPull: false
+    Image: nginx
+    Tag: alpine
+  LivenessProbe: null
+  Name: nginx
+  Persistencies: null
+  PodSecurityContext: null
+  ReadinessProbe: null
+  ResourceLimits: null
+  ResourceRequests:
+    CPU: 50m
+    Memory: 25Mi
+  SecurityContext: null
+  Sidecars: null
+  SingleInstance: false
+  Volumes:
+    - MountPath: /etc/nginx/conf.d
+      Name: nginx-conf
+      ReadOnly: false
+      Source: 2
+ServiceDefinitionID: 376
+ServiceDefinitionName: web
+
+---
+AfterPlugins: null
+Dependencies:
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        RABBITMQ_HOST:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+    Plugins: null
+    ServiceDefinitionID: 223
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        REDIS_ENDPOINTS:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+    Plugins: null
+    ServiceDefinitionID: 224
+    UseSamePort: true
+  - Inputs:
+      CommandLineArguments: null
+      Entrypoint: null
+      EnvironmentVariables:
+        MONGO_PRIV_IP:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalHostname
+        MONGO_URL:
+          _type: capabilities.OutputURIPartGetter
+          Append: ""
+          Key: main-uri
+          Part: InternalURI
+    Plugins: null
+    ServiceDefinitionID: 225
+    UseSamePort: true
+  - Inputs: null
+    Plugins: null
+    ServiceDefinitionID: 376
+    UseSamePort: false
+Plugin:
+  _type: empty.Plugin
+  Exposures:
+    main-uri:
+      URI:
+        ExternalPort: 38877
+        InternalPort: 38877
+        InternalScheme: http
+        IsPasswordSet: false
+        Password: ""
+        Path: ""
+        Protocol: TCP
+        Username: ""
+ServiceDefinitionID: 231
+ServiceDefinitionName: console

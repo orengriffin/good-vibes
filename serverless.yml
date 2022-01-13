@@ -2,7 +2,7 @@ service: well-being-bot
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs12.x
   stage: dev
   region: us-east-1
   profile: oren
@@ -10,9 +10,10 @@ provider:
     TELEGRAM_TOKEN: ${env:TELEGRAM_TOKEN}
     PLOTLY_TOKEN: ${env:PLOTLY_TOKEN}
     PLOTLY_USER: ${env:PLOTLY_USER}
-    MLAB_USER: ${env:MLAB_USER}
-    MLAB_PASS: ${env:MLAB_PASS}
-    MLAB_DB: ${env:MLAB_DB}
+    ATLAS_USER: ${env:ATLAS_USER}
+    ATLAS_PASS: ${env:ATLAS_PASS}
+    ATLAS_DB: ${env:ATLAS_DB}
+    POST_ADD_LABEL_URL: ${env:POST_ADD_LABEL_URL}
 
 functions:
   app:

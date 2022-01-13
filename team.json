@@ -1,0 +1,54 @@
+{
+    "update_id": 862109504,
+    "callback_query": {
+        "id": "242028633614383121",
+        "from": {
+            "id": 56351682,
+            "is_bot": false,
+            "first_name": "Oren",
+            "last_name": "Griffin",
+            "language_code": "en"
+        },
+        "message": {
+            "message_id": 1263,
+            "from": {
+                "id": 583968863,
+                "is_bot": true,
+                "first_name": "happyBot",
+                "username": "happyDoingBot"
+            },
+            "chat": {
+                "id": 56351682,
+                "first_name": "Oren",
+                "last_name": "Griffin",
+                "type": "private"
+            },
+            "date": 1562932509,
+            "text": "in what team is 'orengriffin' (5842)?",
+            "reply_markup": {
+                "inline_keyboard": [
+                    [
+                        {
+                            "text": "Data",
+                            "callback_data": "/data"
+                        },
+                        {
+                            "text": "Euclid",
+                            "callback_data": "/euclid"
+                        },
+                        {
+                            "text": "Planning-fe",
+                            "callback_data": "/planning"
+                        },
+                        {
+                            "text": "Scheduling-fe",
+                            "callback_data": "/front-s"
+                        }
+                    ]
+                ]
+            }
+        },
+        "chat_instance": "2087159535196798780",
+        "data": "/planning"
+    }
+}
