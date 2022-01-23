@@ -23,6 +23,6 @@
     "slimbot": "^0.8.3"
   },
   "devDependencies": {
-    "serverless-offline": "8.3.1"
+    "serverless-offline": "^8.3.1"
   }
 }

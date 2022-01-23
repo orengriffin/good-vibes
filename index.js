@@ -46,29 +46,24 @@ async function feelGoodMessage(chatId) {
     parse_mode: 'Markdown',
     reply_markup: JSON.stringify({
       inline_keyboard: [[
-        { text: '-5', callback_data: '/-5' },
       ], [
-        { text: '-4', callback_data: '/-4' },
         { text: '-3', callback_data: '/-3' },
         { text: '-2', callback_data: '/-2' },
-      ], [
         { text: '-1', callback_data: '/-1' },
         { text: '0', callback_data: '/0' },
         { text: '1', callback_data: '/1' },
-      ], [
         { text: '2', callback_data: '/2' },
         { text: '3', callback_data: '/3' },
-        { text: '4', callback_data: '/4' },
       ], [
-        { text: '5', callback_data: '/5' },
+        { text: 'notifications on', callback_data: '/start' },
+        { text: 'notifications off', callback_data: '/stop' },
       ], [
         { text: 'create report', callback_data: '/report' },
-        { text: 'stop', callback_data: '/stop' },
-      ],
+      ]
       ],
     }),
   };
-  await bot.sendMessage(chatId, 'How you doing? (0 ok, 1 good, 2 very good, 3 amazing!, -1 not so well, -2 bad, -3 very bad)', keyboard);
+  await bot.sendMessage(chatId, 'How are you feeling? (0 ok, 1 good, 2 very good, 3 amazing!, -1 not so well, -2 bad, -3 very bad)', keyboard);
 }
 
 const createGraphData = data => ({
@@ -142,9 +137,9 @@ app.get('/get-message', async (req, res) => {
   const cursor = db.collection('users').find({ status: 'on' });
   for (let user = await cursor.next(); user != null; user = await cursor.next()) {
     console.log(`Sending message to ${user.firstName}`);
-    if (user._id == 184823763) { // avicii id
-      await feelGoodMessage(user._id);
-    }
+    //if (user._id == 184823763) { // avicii id
+    await feelGoodMessage(user._id);
+    //}
   }
   res.send('get Hello World!');
 });
@@ -188,14 +183,14 @@ app.post('/post-message', async (req, res) => {
       await db.collection('users').save({
         _id: chatId, firstName, lastName, date, status,
       });
-      await bot.sendMessage(chatId, 'added user');
+      await bot.sendMessage(chatId, 'notifications on');
       await feelGoodMessage(chatId);
-      return res.send('added user');
+      return res.send('notification on');
     }
 
     if (text === 'stop') {
       await db.collection('users').update({ _id: chatId }, { $set: { status: 'off' } });
-      const replyMessage = 'shut off';
+      const replyMessage = 'notifications off';
       console.log({ replyMessage });
       await bot.sendMessage(chatId, replyMessage);
       return res.send(replyMessage.url);
@@ -219,7 +214,7 @@ app.post('/post-message', async (req, res) => {
         if (report > 0) {
           replyMessage = 'doing good!';
         } else if (report <= -3) {
-          replyMessage = 'Call for help!';
+          replyMessage = 'call for help!';
         } else {
           replyMessage = 'good vibes are coming';
         }

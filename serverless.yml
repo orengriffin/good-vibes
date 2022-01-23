@@ -14,6 +14,7 @@ provider:
     ATLAS_PASS: ${env:ATLAS_PASS}
     ATLAS_DB: ${env:ATLAS_DB}
     POST_ADD_LABEL_URL: ${env:POST_ADD_LABEL_URL}
+  lambdaHashingVersion: 20201221
 
 functions:
   app:
