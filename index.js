@@ -99,10 +99,10 @@ async function createReport1(chatId) {
   }
   const now = new Date();
   const nintyDaysAgo = now.getTime() - (90 * 86400000);
-   const data = reports.map((report) => ({
+  const data = reports.map((report) => ({
       x: new Date(report.date),
       y: report.report
-   })).filter(d => d.x.getTime() > nintyDaysAgo);
+  })).filter(d => d.x.getTime() > nintyDaysAgo);
   //console.log(data);
   const qc = new QuickChart();
   qc.setConfig({ type, data: createGraphData(data), options });
