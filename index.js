@@ -98,7 +98,7 @@ async function createReport1(chatId) {
     }
   }
   const now = new Date();
-  const nintyDaysAgo = now.getTime() - (90 * 86400000);
+  const nintyDaysAgo = now.getTime() - (180 * 86400000);
   const data = reports.map((report) => ({
       x: new Date(report.date),
       y: report.report
