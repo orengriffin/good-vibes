@@ -69,7 +69,7 @@ async function feelGoodMessage(chatId) {
       ],
     }),
   };
-  await bot.sendMessage(chatId, 'How are you feeling? (0 ok, 1 good, 2 very good, 3 amazing!, -1 not so well, -2 bad, -3 very bad)', keyboard);
+  await bot.sendMessage(chatId, 'How are you feeling? \n-5 suicidal\n-4 heavily depressed\n-3 very bad\n-2 bad\n-1 not so well\n 0 ok\n 1 good\n 2 very good\n 3 amazing!\n4 hypomanic\n 5 manic', keyboard);
 }
 
 const createGraphData = data => ({
