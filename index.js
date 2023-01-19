@@ -65,15 +65,24 @@ async function feelGoodMessage(chatId) {
         { text: 'notifications off', callback_data: '/stop' },
       ], [
         { text: 'create report', callback_data: '/report' },
-      ]
       ],
-    }),
+      ];
+  if (chatId === 184823763) {
+	  inline_keyboard.push( [ 
+        { text: 'report all', callback_data: '/report-all' }
+      ]);
+  }
+
+  const keyboard = {
+    parse_mode: 'Markdown',
+    reply_markup: JSON.stringify({ inline_keyboard }),
   };
   await bot.sendMessage(chatId, 'How are you feeling? \n-5 suicidal\n-4 heavily depressed\n-3 very bad\n-2 bad\n-1 not so well\n 0 ok\n 1 good\n 2 very good\n 3 amazing!\n 4 hypomanic\n 5 manic', keyboard);
 }
 
 const createGraphData = data => ({
     datasets: [{
+      label: 'Mood Graph',
       data,
       fill: false,
       borderColor: 'blue',
@@ -150,7 +159,7 @@ app.get('/get-message', async (req, res) => {
   res.send('get Hello World!');
 });
 
-app.post('/post-message', async (req, res) => {
+const reportAllFn = async (req, res) => {
   console.log(JSON.stringify(req.body, 2, 2));
   try {
     let messageBody = null;
@@ -199,30 +208,63 @@ app.post('/post-message', async (req, res) => {
       const replyMessage = 'notifications off';
       console.log({ replyMessage });
       await bot.sendMessage(chatId, replyMessage);
-      return res.send(replyMessage.url);
+      return res.send(replyMessage);
     }
 
     if (text === 'report') {
       const replyMessage = await createReport1(chatId);
       console.log({ replyMessage });
       await bot.sendMessage(chatId, replyMessage);
+      return res.send(replyMessage);
+    }
+
+    if (text === 'report-all') {
+      const cursor = db.collection('users').find({ status: 'on' });
+      let replyMessage;
+      for (let user = await cursor.next(); user != null; user = await cursor.next()) {
+        console.log(`creating report for user ${user.firstName} with id ${user._id}`);
+	try {
+          replyMessage = await createReport1(user._id);
+	} catch (err) {
+		console.log('caught error');
+		console.error(err);
+	}
+	console.log('reply message is ' + replyMessage);
+	if (replyMessage) {
+		console.log('in if');
+        	console.log({ replyMessage });
+        	await bot.sendMessage(chatId, user.firstName + '\n' + replyMessage);
+	}
+      }
+      return res.send(replyMessage);
+    }
+
+    if (text === 'report-all') {
+      const cursor = db.collection('users').find({ status: 'on' });
+      for (let user = await cursor.next(); user != null; user = await cursor.next()) {
+        console.log(`creating report for user ${user.firstName} with id ${user._id}`);
+        const replyMessage = await createReport1(user._id);
+        console.log({ replyMessage });
+        await bot.sendMessage(chatId, user.firstName + '\n' + replyMessage);
+      }
       return res.send(replyMessage.url);
     }
 
     if (isNumber(text)) {
       const report = Number(text);
       console.log({ report });
-      let replyMessage = 'shut off';
+      let replyMessage = 'Shut off';
       if (report > 5 || report < -5) {
-        replyMessage = 'report should be between -5 and 5';
+        replyMessage = 'Report should be between -5 and 5';
       } else {
         await db.collection('report').insert({ chatId, report, date });
         if (report > 0) {
-          replyMessage = 'doing good!';
+          replyMessage = 'Doing good!';
         } else if (report <= -3) {
-          replyMessage = 'call for help!';
+          replyMessage = 'Call for help!';
         } else {
-          replyMessage = 'good vibes are coming';
+	  var memes = ["https://inspirationfeed.com/wp-content/uploads/2020/09/funny-life-memes-min.png", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes9.jpg" ,"https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes11.jpg", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes15.jpg", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes17.jpg", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes21.jpg", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes57.jpg", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes59.jpg", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes62.jpg", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes91.jpg", "https://inspirationfeed.com/wp-content/uploads/2020/09/Motivational-Memes97.jpg", "https://blog-images-ft.s3.amazonaws.com/custom/1609361295article_img.jpg", "https://blog-images-ft.s3.amazonaws.com/custom/1609361323article_img.jpg", "https://blog-images-ft.s3.amazonaws.com/custom/1609361777article_img.jpg"]
+          replyMessage = 'Good vibes are coming\n\n' + '"' + memes[Math.floor(Math.random() * memes.length)] + '"';
         }
       }
 
@@ -261,6 +303,9 @@ app.post('/post-message', async (req, res) => {
     console.error(err);
     return res.status(500).send(err);
   }
-});
+};
+
+app.post('/post-message', reportAllFn);
 
 module.exports.handler = serverless(app);
+module.exports.reportAll = reportAllFn;

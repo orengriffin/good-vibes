@@ -1,4 +1,4 @@
-deploy.sh
+.global-vars.sh
 offline.sh
 logs.sh
 aws-keys
